@@ -52,7 +52,7 @@ export default function Home() {
             const preprocessData = await safeFetch('/api/preprocess', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ articles: collectData.articles }),
+                body: JSON.stringify({ articles: collectData.articles, keyword: keyword.trim() || null }),
             });
             if (!preprocessData.success) {
                 if (preprocessData.data?.error === 'INSUFFICIENT_DATA') {

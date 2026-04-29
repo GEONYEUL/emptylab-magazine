@@ -6,10 +6,10 @@ export const maxDuration = 60;
 
 export async function POST(request) {
     try {
-        const { articles } = await request.json();
-        console.log(`[API/preprocess] Gemini 전처리 시작 (${articles.length}건)`);
+        const { articles, keyword } = await request.json();
+        console.log(`[API/preprocess] Gemini 전처리 시작 (${articles.length}건, 키워드: ${keyword || '전체'})`);
 
-        const geminiOutput = await step1_preprocess(articles);
+        const geminiOutput = await step1_preprocess(articles, keyword);
 
         return Response.json({
             success: !geminiOutput.error,
