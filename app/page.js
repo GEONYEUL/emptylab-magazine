@@ -9,9 +9,22 @@ const STEPS = [
     { id: 'save', label: '발행', icon: '🚀', desc: 'Notion 저장 + Slack 알림' },
 ];
 
+// API 응답을 안전하게 파싱하는 헬퍼
+// 서버가 JSON이 아닌 텍스트(에러 페이지 등)를 반환해도 크래시 방지
+async function safeFetch(url, options) {
+    const res = await fetch(url, options);
+    const text = await res.text();
+    try {
+        return JSON.parse(text);
+    } catch {
+        // JSON 파싱 실패 → 서버가 에러 텍스트를 반환한 경우
+        throw new Error(`서버 오류 (${res.status}): ${text.substring(0, 200)}`);
+    }
+}
+
 export default function Home() {
     const [keyword, setKeyword] = useState('');
-    const [currentStep, setCurrentStep] = useState(-1); // -1 = 대기
+    const [currentStep, setCurrentStep] = useState(-1);
     const [stepResults, setStepResults] = useState({});
     const [finalResult, setFinalResult] = useState(null);
     const [error, setError] = useState(null);
@@ -26,23 +39,21 @@ export default function Home() {
         try {
             // STEP 0: 뉴스 수집
             setCurrentStep(0);
-            const collectRes = await fetch('/api/collect', {
+            const collectData = await safeFetch('/api/collect', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ keyword: keyword.trim() || null }),
             });
-            const collectData = await collectRes.json();
             if (!collectData.success) throw new Error(collectData.error || '수집 실패');
             setStepResults(prev => ({ ...prev, collect: collectData }));
 
             // STEP 1: Gemini 전처리
             setCurrentStep(1);
-            const preprocessRes = await fetch('/api/preprocess', {
+            const preprocessData = await safeFetch('/api/preprocess', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ articles: collectData.articles }),
             });
-            const preprocessData = await preprocessRes.json();
             if (!preprocessData.success) {
                 if (preprocessData.data?.error === 'INSUFFICIENT_DATA') {
                     throw new Error(`기사 부족 (${preprocessData.data.count}건) — 다른 키워드로 시도해 보세요`);
@@ -53,23 +64,21 @@ export default function Home() {
 
             // STEP 2: Claude 글쓰기
             setCurrentStep(2);
-            const writeRes = await fetch('/api/write', {
+            const writeData = await safeFetch('/api/write', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ geminiOutput: preprocessData.data }),
             });
-            const writeData = await writeRes.json();
             if (!writeData.success) throw new Error(writeData.error || '글쓰기 실패');
             setStepResults(prev => ({ ...prev, write: writeData }));
 
             // STEP 3: 저장 & 알림
             setCurrentStep(3);
-            const saveRes = await fetch('/api/save', {
+            const saveData = await safeFetch('/api/save', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ finalData: writeData.data }),
             });
-            const saveData = await saveRes.json();
             setStepResults(prev => ({ ...prev, save: saveData }));
 
             // 완료
