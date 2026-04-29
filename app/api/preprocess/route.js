@@ -2,7 +2,7 @@
 // STEP 1: Gemini 전처리
 import { step1_preprocess } from '../../../lib/pipeline.js';
 
-export const maxDuration = 10;
+export const maxDuration = 60;
 
 export async function POST(request) {
     try {

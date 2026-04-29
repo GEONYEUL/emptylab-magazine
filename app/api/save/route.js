@@ -2,7 +2,7 @@
 // STEP 3: Notion 저장 + Slack 알림
 import { step3_save } from '../../../lib/pipeline.js';
 
-export const maxDuration = 10;
+export const maxDuration = 60;
 
 export async function POST(request) {
     try {

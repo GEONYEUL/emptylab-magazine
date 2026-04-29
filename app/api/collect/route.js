@@ -2,7 +2,7 @@
 // STEP 0: 뉴스 수집 (키워드 필터 지원)
 import { scrapeSources } from '../../../lib/scraper.js';
 
-export const maxDuration = 10;
+export const maxDuration = 60;
 
 export async function POST(request) {
     try {
