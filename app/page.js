@@ -215,25 +215,26 @@ export default function Home() {
                         <p className="text-lg leading-relaxed italic">{finalResult.article.article?.intro}</p>
                     </div>
 
-                    {/* 딥다이브 */}
+                    {/* 트렌드 브리핑 */}
                     <div className="glass-card p-6">
-                        <h3 className="text-lg font-bold mb-3">📌 원포인트 딥다이브</h3>
+                        <h3 className="text-lg font-bold mb-3">📌 트렌드 브리핑</h3>
                         <p className="leading-relaxed whitespace-pre-line" style={{ color: 'var(--color-text-dim)' }}>
                             {finalResult.article.article?.deepdive}
                         </p>
                     </div>
 
-                    {/* 전문가의 시선 */}
+                    {/* 내 한 잔에 어떤 의미? */}
                     <div className="glass-card p-6">
-                        <h3 className="text-lg font-bold mb-3">🔍 전문가의 시선</h3>
+                        <h3 className="text-lg font-bold mb-3">☕ 내 한 잔에 어떤 의미?</h3>
                         <p className="leading-relaxed whitespace-pre-line" style={{ color: 'var(--color-text-dim)' }}>
-                            {finalResult.article.article?.expert_touch}
+                            {finalResult.article.article?.lifestyle}
                         </p>
                     </div>
 
+
                     {/* 실전 적용 */}
                     <div className="glass-card p-6">
-                        <h3 className="text-lg font-bold mb-3">🚀 카페에서 이렇게 써먹어라</h3>
+                        <h3 className="text-lg font-bold mb-3">💡 이렇게 즐겨보세요</h3>
                         <ul className="space-y-2">
                             {(finalResult.article.article?.action_tips || []).map((tip, i) => (
                                 <li key={i} className="leading-relaxed" style={{ color: 'var(--color-text-dim)' }}>{tip}</li>
