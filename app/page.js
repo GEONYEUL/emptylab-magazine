@@ -5,6 +5,7 @@ import ErrorNotice from './components/ErrorNotice.js';
 import KeywordForm from './components/KeywordForm.js';
 import PipelineSteps from './components/PipelineSteps.js';
 import ResultView from './components/ResultView.js';
+import IssueSelector from './components/IssueSelector.js';
 
 async function safeFetch(url, options) {
     const res = await fetch(url, options);
@@ -32,11 +33,16 @@ export default function Home() {
     const [error, setError] = useState(null);
     const [isRunning, setIsRunning] = useState(false);
 
-    async function runPipeline() {
+    const [issues, setIssues] = useState([]);
+    const [selectedIssue, setSelectedIssue] = useState(null);
+
+    async function fetchIssues() {
         setIsRunning(true);
         setError(null);
         setFinalResult(null);
         setStepResults({});
+        setIssues([]);
+        setSelectedIssue(null);
 
         const normalizedKeyword = keyword.trim() || null;
 
@@ -51,20 +57,49 @@ export default function Home() {
             setStepResults(prev => ({ ...prev, collect: collectData }));
 
             setCurrentStep(1);
-            const preprocessData = await safeFetch('/api/preprocess', {
+            const issuesData = await safeFetch('/api/extract-issues', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ articles: collectData.articles, keyword: normalizedKeyword }),
             });
-            if (!preprocessData.success) {
-                if (preprocessData.data?.error === 'INSUFFICIENT_DATA') {
-                    throw new Error(`기사 부족 (${preprocessData.data.count}건) - 다른 키워드로 시도해 보세요`);
+            if (!issuesData.success) {
+                if (issuesData.data?.error === 'INSUFFICIENT_DATA') {
+                    throw new Error(`기사 부족 (${issuesData.data.count}건) - 다른 키워드로 시도해 보세요`);
                 }
-                throw new Error(preprocessData.error || preprocessData.data?.message || '전처리 실패');
+                throw new Error(issuesData.error || issuesData.data?.message || '이슈 추출 실패');
             }
+            setStepResults(prev => ({ ...prev, 'extract-issues': issuesData }));
+            
+            // 이슈 선택 UI 표시를 위해 실행 상태 중지
+            setIssues(issuesData.data.issues || []);
+            setIsRunning(false);
+
+        } catch (err) {
+            setError(err.message);
+            setCurrentStep(-1);
+            setIsRunning(false);
+        }
+    }
+
+    async function continuePipeline(issue) {
+        setSelectedIssue(issue);
+        setIsRunning(true);
+        setError(null);
+
+        try {
+            setCurrentStep(2);
+            const preprocessData = await safeFetch('/api/preprocess', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    articles: stepResults.collect.articles, 
+                    keyword: issue.title 
+                }),
+            });
+            if (!preprocessData.success) throw new Error(preprocessData.error || '전처리 실패');
             setStepResults(prev => ({ ...prev, preprocess: preprocessData }));
 
-            setCurrentStep(2);
+            setCurrentStep(3);
             const writeData = await safeFetch('/api/write', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -73,17 +108,29 @@ export default function Home() {
             if (!writeData.success) throw new Error(writeData.error || '글쓰기 실패');
             setStepResults(prev => ({ ...prev, write: writeData }));
 
-            setCurrentStep(3);
+            setCurrentStep(4);
+            const reviewData = await safeFetch('/api/review', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    articleData: writeData.data,
+                    originalFacts: preprocessData.data
+                }),
+            });
+            if (!reviewData.success) throw new Error(reviewData.error || '팩트체크 리뷰 실패');
+            setStepResults(prev => ({ ...prev, review: reviewData }));
+
+            setCurrentStep(5);
             const saveData = await safeFetch('/api/save', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ finalData: writeData.data }),
+                body: JSON.stringify({ finalData: reviewData.data }),
             });
             setStepResults(prev => ({ ...prev, save: saveData }));
 
-            setCurrentStep(4);
+            setCurrentStep(6);
             setFinalResult({
-                article: writeData.data,
+                article: reviewData.data,
                 notionUrl: saveData.notionUrl,
                 notionError: saveData.notionError,
                 slackError: saveData.slackError,
@@ -111,10 +158,15 @@ export default function Home() {
                 keyword={keyword}
                 setKeyword={setKeyword}
                 isRunning={isRunning}
-                onRun={runPipeline}
+                onRun={fetchIssues}
             />
 
             <PipelineSteps currentStep={currentStep} stepResults={stepResults} isRunning={isRunning} />
+            
+            {!selectedIssue && !isRunning && issues.length > 0 && (
+                <IssueSelector issues={issues} onSelect={continuePipeline} isRunning={isRunning} />
+            )}
+
             <ErrorNotice error={error} />
             <ResultView finalResult={finalResult} />
 
