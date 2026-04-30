@@ -1,37 +1,32 @@
+@import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/variable/pretendardvariable-dynamic-subset.css');
 @import "tailwindcss";
 
 @theme {
-  --color-brand: #1a1a2e;
-  --color-surface: #16213e;
-  --color-accent: #e94560;
-  --color-accent-light: #ff6b81;
-  --color-gold: #f5c542;
-  --color-text: #eaeaea;
-  --color-text-dim: #8892a4;
-  --color-card: rgba(22, 33, 62, 0.7);
-}
-
-@font-face {
-  font-family: 'Pretendard';
-  src: url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css');
+  --color-brand: #111112;
+  --color-surface: #1b1a1f;
+  --color-accent: #c4495f;
+  --color-accent-light: #ec6a78;
+  --color-gold: #f1cf7a;
+  --color-text: #f2f0ec;
+  --color-text-dim: #a5a19b;
+  --color-card: rgba(25, 24, 28, 0.78);
 }
 
 body {
-  font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  background: linear-gradient(135deg, var(--color-brand) 0%, #0a0a23 50%, #0f3460 100%);
+  font-family: 'Pretendard Variable', 'Pretendard', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background:
+    linear-gradient(135deg, var(--color-brand) 0%, #1b1a1f 54%, #213034 100%);
   color: var(--color-text);
   min-height: 100vh;
 }
 
-/* 글래스모피즘 카드 */
 .glass-card {
   background: var(--color-card);
   backdrop-filter: blur(16px);
   border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 1rem;
+  border-radius: 8px;
 }
 
-/* 파이프라인 스텝 인디케이터 */
 .step-dot {
   width: 12px;
   height: 12px;

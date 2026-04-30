@@ -1,12 +1,21 @@
 // app/api/preprocess/route.js
 // STEP 1: Gemini 전처리
 import { step1_preprocess } from '../../../lib/pipeline.js';
+import { badRequest, normalizeKeyword, readJsonBody } from '../../../lib/api.js';
 
 export const maxDuration = 60;
 
 export async function POST(request) {
     try {
-        const { articles, keyword } = await request.json();
+        const body = await readJsonBody(request);
+        if (!body) return badRequest('Invalid JSON body');
+
+        const { articles } = body;
+        if (!Array.isArray(articles)) return badRequest('articles must be an array');
+
+        const keyword = normalizeKeyword(body.keyword);
+        if (keyword?.error) return badRequest(keyword.error);
+
         console.log(`[API/preprocess] Gemini 전처리 시작 (${articles.length}건, 키워드: ${keyword || '전체'})`);
 
         const geminiOutput = await step1_preprocess(articles, keyword);

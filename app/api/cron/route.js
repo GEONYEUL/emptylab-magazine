@@ -28,9 +28,11 @@ export async function GET(request) {
 
         console.log(`[CRON] ✅ 성공 — ${result.finalData?.article?.title}`);
         return Response.json({
-            success: true,
+            success: !result.notionError && !result.slackError,
             title: result.finalData?.article?.title || null,
             notionUrl: result.notionUrl || null,
+            notionError: result.notionError || null,
+            slackError: result.slackError || null,
         });
     } catch (error) {
         console.error('[CRON] ❌ 오류:', error.message);
