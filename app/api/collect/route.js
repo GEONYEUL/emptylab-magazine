@@ -3,7 +3,7 @@
 import { scrapeSources } from '../../../lib/scraper.js';
 import { badRequest, normalizeKeyword, readJsonBody } from '../../../lib/api.js';
 
-export const maxDuration = 60;
+export const maxDuration = 90;
 
 export async function POST(request) {
     try {

@@ -6,13 +6,18 @@ import { runFullPipeline } from '../../../lib/pipeline.js';
 export const maxDuration = 60;
 
 export async function GET(request) {
-    // Vercel Cron 인증
-    // Vercel은 CRON_SECRET 환경변수가 설정되어 있으면
-    // Cron 호출 시 자동으로 `Authorization: Bearer <CRON_SECRET>` 헤더를 추가함
+    // ── Cron 인증 ──
+    // CRON_SECRET이 설정되지 않으면 외부 호출을 완전히 차단
+    // (로컬 개발 시에도 반드시 CRON_SECRET을 설정해야 테스트 가능)
     const authHeader = request.headers.get('authorization');
     const cronSecret = process.env.CRON_SECRET;
 
-    if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
+    if (!cronSecret) {
+        console.error('[CRON] ❌ CRON_SECRET 환경변수가 설정되지 않음 — 호출 차단');
+        return Response.json({ error: 'CRON_SECRET not configured' }, { status: 403 });
+    }
+
+    if (authHeader !== `Bearer ${cronSecret}`) {
         console.error('[CRON] ❌ 인증 실패 — 헤더:', authHeader?.substring(0, 20) || '없음');
         return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
