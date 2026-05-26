@@ -9,7 +9,7 @@
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.91.1",
-    "@google/generative-ai": "^0.24.1",
+    "@google/genai": "^2.6.0",
     "@notionhq/client": "^5.20.0",
     "@tailwindcss/postcss": "^4.2.4",
     "axios": "^1.15.2",

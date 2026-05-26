@@ -2,8 +2,8 @@
 // Vercel Cron Job — 매일 자동 실행
 import { runFullPipeline } from '../../../lib/pipeline.js';
 
-// Cron은 수집~전처리~글쓰기~저장 전 과정을 한 번에 실행하므로 충분한 시간 필요
-export const maxDuration = 60;
+// Cron은 전체 파이프라인(수집~저장)을 실행하므로 재시도 포함 충분한 시간 필요
+export const maxDuration = 120;
 
 export async function GET(request) {
     // ── Cron 인증 ──

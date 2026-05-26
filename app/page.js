@@ -7,7 +7,12 @@ import PipelineSteps from './components/PipelineSteps.js';
 import ResultView from './components/ResultView.js';
 import IssueSelector from './components/IssueSelector.js';
 
-async function safeFetch(url, options) {
+// 일시적 서버 에러(529 과부하, 500 내부오류 등)에 대한 재시도 대기 함수
+function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+async function safeFetch(url, options, retries = 2) {
     const res = await fetch(url, options);
     const text = await res.text();
     let data;
@@ -19,6 +24,22 @@ async function safeFetch(url, options) {
     }
 
     if (!res.ok) {
+        // 529(과부하), 500(내부 오류) 등 일시적 에러 → 자동 재시도
+        const retryableStatuses = [429, 500, 502, 503, 504, 529];
+        if (retryableStatuses.includes(res.status) && retries > 0) {
+            const delay = (3 - retries) * 5000 + 3000; // 3초, 8초 순으로 대기
+            console.warn(`[safeFetch] ${res.status} 에러, ${delay / 1000}초 후 재시도 (남은 횟수: ${retries})`);
+            await sleep(delay);
+            return safeFetch(url, options, retries - 1);
+        }
+
+        // 사용자에게 더 친절한 에러 메시지 제공
+        if (res.status === 529) {
+            throw new Error('AI 서버가 현재 과부하 상태입니다. 잠시 후 다시 시도해 주세요.');
+        }
+        if (res.status === 504) {
+            throw new Error('서버 응답 시간이 초과되었습니다. AI 처리에 시간이 오래 걸릴 수 있으니, 잠시 후 다시 시도해 주세요.');
+        }
         throw new Error(data.error || `서버 오류 (${res.status})`);
     }
 

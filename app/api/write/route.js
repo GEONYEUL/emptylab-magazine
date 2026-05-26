@@ -3,7 +3,8 @@
 import { step2_write } from '../../../lib/pipeline.js';
 import { badRequest, isPlainObject, readJsonBody } from '../../../lib/api.js';
 
-export const maxDuration = 60;
+// Vercel 서버리스 함수 타임아웃: 재시도(최대 3회 × 대기시간) 고려하여 120초로 설정
+export const maxDuration = 120;
 
 export async function POST(request) {
     try {
