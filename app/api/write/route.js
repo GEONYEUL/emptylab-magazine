@@ -12,7 +12,10 @@ export async function POST(request) {
         if (!body) return badRequest('Invalid JSON body');
 
         const { geminiOutput } = body;
-        if (!isPlainObject(geminiOutput)) return badRequest('geminiOutput must be an object');
+        if (!isPlainObject(geminiOutput)) {
+            console.error('[API/write] geminiOutput is not plain object:', JSON.stringify(geminiOutput));
+            return badRequest('geminiOutput must be an object');
+        }
         if (geminiOutput.error) return badRequest('geminiOutput contains an error', geminiOutput);
 
         console.log('[API/write] Claude 글쓰기 시작...');
