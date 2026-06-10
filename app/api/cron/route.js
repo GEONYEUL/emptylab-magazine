@@ -3,7 +3,7 @@
 import { runFullPipeline } from '../../../lib/pipeline.js';
 
 // Cron은 전체 파이프라인(수집~저장)을 실행하므로 재시도 포함 충분한 시간 필요
-export const maxDuration = 120;
+export const maxDuration = 60;
 
 export async function GET(request) {
     // ── Cron 인증 ──
