@@ -27,7 +27,8 @@ async function safeFetch(url, options, retries = 2) {
         // 529(과부하), 500(내부 오류) 등 일시적 에러 → 자동 재시도
         const retryableStatuses = [429, 500, 502, 503, 504, 529];
         if (retryableStatuses.includes(res.status) && retries > 0) {
-            const delay = (3 - retries) * 5000 + 3000; // 3초, 8초 순으로 대기
+            // 서버 측에서 이미 재시도 로직이 있으므로, 클라이언트는 짧게 대기
+            const delay = (3 - retries) * 3000 + 2000; // 2초, 5초 순으로 대기
             console.warn(`[safeFetch] ${res.status} 에러, ${delay / 1000}초 후 재시도 (남은 횟수: ${retries})`);
             await sleep(delay);
             return safeFetch(url, options, retries - 1);
