@@ -64,14 +64,39 @@ export default function ResultView({ finalResult }) {
 
             {cardNews.length > 0 && (
                 <div className="glass-card p-5 md:p-6">
-                    <h3 className="text-lg font-bold mb-3">카드뉴스 대본</h3>
-                    <div className="space-y-2">
-                        {cardNews.map((slide, i) => (
-                            <div key={i} className="flex gap-3 items-start p-3 rounded-lg bg-white/[0.03]">
-                                <span className="font-bold text-sm shrink-0 text-[var(--color-gold)]">{i + 1}</span>
-                                <p className="text-sm text-[var(--color-text-dim)]">{slide}</p>
-                            </div>
-                        ))}
+                    <h3 className="text-lg font-bold mb-3">📱 인스타그램 카드뉴스 대본</h3>
+                    <div className="space-y-3">
+                        {cardNews.map((slide, i) => {
+                            {/* 구조화된 객체인 경우 (slide, type, text, image_guide) */}
+                            if (typeof slide === 'object' && slide !== null) {
+                                return (
+                                    <div key={i} className="p-4 rounded-lg bg-white/[0.03] border border-white/[0.06]">
+                                        <div className="flex items-center gap-2 mb-2">
+                                            <span className="font-bold text-sm px-2 py-0.5 rounded" style={{ background: 'var(--color-gold)', color: 'var(--color-brand)' }}>
+                                                {slide.slide || i + 1}
+                                            </span>
+                                            <span className="text-xs font-medium text-[var(--color-accent-light)]">
+                                                {slide.type || ''}
+                                            </span>
+                                        </div>
+                                        <p className="text-sm font-medium mb-2">{slide.text || ''}</p>
+                                        {slide.image_guide && (
+                                            <div className="mt-2 p-3 rounded-md bg-white/[0.02] border border-dashed border-white/[0.08]">
+                                                <p className="text-xs text-[var(--color-text-dim)] mb-1 font-medium">🎨 이미지 가이드</p>
+                                                <p className="text-xs text-[var(--color-text-dim)] leading-relaxed">{slide.image_guide}</p>
+                                            </div>
+                                        )}
+                                    </div>
+                                );
+                            }
+                            {/* 기존 문자열 형태 호환 */}
+                            return (
+                                <div key={i} className="flex gap-3 items-start p-3 rounded-lg bg-white/[0.03]">
+                                    <span className="font-bold text-sm shrink-0 text-[var(--color-gold)]">{i + 1}</span>
+                                    <p className="text-sm text-[var(--color-text-dim)]">{slide}</p>
+                                </div>
+                            );
+                        })}
                     </div>
                 </div>
             )}
